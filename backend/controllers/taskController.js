@@ -2,11 +2,13 @@ const db = require("../config/db");
 
 const createTask = async (req, res) => {
   try {
-    const { title } = req.body;
+    const { title, description } = req.body;
+
+    const user_id = req.user.id;
 
     const [result] = await db.query(
-      "INSERT INTO tasks(title) VALUES(?)",
-      [title]
+      "INSERT INTO tasks (title, description, user_id) VALUES (?, ?, ?)",
+      [title, description, user_id]
     );
 
     res.status(201).json({
@@ -16,31 +18,22 @@ const createTask = async (req, res) => {
 
   } catch (error) {
     console.log(error);
-
-    res.status(500).json({
-      message: "Server Error"
-    });
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
 const getTasks = async (req, res) => {
-  try {
+  let tasks;
 
-    const [tasks] = await db.query(
-      "SELECT * FROM tasks"
-    );
-
-    res.status(200).json(tasks);
-
-  } catch (error) {
-
-    console.log(error);
-
-    res.status(500).json({
-      message: "Server Error"
-    });
-
+  if (req.user.role === "admin") {
+    [tasks] = await db.query("SELECT * FROM tasks");
+  } else {
+    [tasks] = await db.query("SELECT * FROM tasks WHERE user_id = ?", [
+      req.user.id
+    ]);
   }
+
+  res.status(200).json(tasks);
 };
 
 const updateTask = async (req, res) => {

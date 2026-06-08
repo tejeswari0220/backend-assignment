@@ -1,4 +1,5 @@
 const express = require("express");
+const verifyAdmin = require("../middleware/roleMiddleware");
 const verifyToken = require("../middleware/authMiddleware");
 
 const {
@@ -7,7 +8,7 @@ const {
   updateTask,
   deleteTask
 } = require("../controllers/taskController");
-
+const roleCheck = require("../middleware/roleMiddleware");
 const router = express.Router();
 
 router.post("/tasks", verifyToken, createTask);
@@ -18,6 +19,7 @@ router.put("/tasks/:id", verifyToken, updateTask);
 router.delete(
   "/tasks/:id",
   verifyToken,
+  verifyAdmin,
   deleteTask
 );
 
